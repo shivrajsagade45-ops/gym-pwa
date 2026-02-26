@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="description" content="GymPro - Modern Gym Management PWA for managing members, payments, and packages" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="GymPro" />
+    
+    <title>GymPro - Gym Management</title>
+    
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <style>
+      /* Loading spinner for initial load */
+      .app-loader {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: 'Inter', sans-serif;
+      }
+      .app-loader-icon {
+        width: 80px;
+        height: 80px;
+        background: white;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      }
+      .app-loader-icon svg {
+        width: 48px;
+        height: 48px;
+      }
+      .app-loader-text {
+        color: white;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+      .app-loader-subtext {
+        color: rgba(255,255,255,0.8);
+        font-size: 14px;
+      }
+      .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-top: 24px;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="app-loader">
+        <div class="app-loader-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6.5 6.5h11v11h-11z"/>
+            <path d="M6.5 12h-4v-2h4"/>
+            <path d="M6.5 12h-4v2h4"/>
+            <path d="M17.5 12h4v-2h-4"/>
+            <path d="M17.5 12h4v2h-4"/>
+          </svg>
+        </div>
+        <div class="app-loader-text">GymPro</div>
+        <div class="app-loader-subtext">Loading your gym management app...</div>
+        <div class="spinner"></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+  </body>
+</html>
