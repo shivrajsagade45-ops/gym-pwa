@@ -70,7 +70,7 @@ import { DatabaseConfig } from './types';
 // ============================================
 
 export const databaseConfig: DatabaseConfig = {
-  provider: 'supabase', // Change to 'firebase', 'supabase', 'mongodb', or 'custom'
+  provider: 'local', // Change to 'firebase', 'supabase', 'mongodb', or 'custom'
   
   // Uncomment and fill in the appropriate config:
   

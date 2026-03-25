@@ -1,0 +1,12 @@
+name = "gym-api"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+compatibility_flags = [ "nodejs_compat" ]
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "gym-db"
+database_id = "e54973e6-6020-4cb0-99d5-f7ab6bbb2ef0"
