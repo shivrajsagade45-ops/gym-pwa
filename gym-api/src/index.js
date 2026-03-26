@@ -27,27 +27,48 @@ export default {
           headers: { "Content-Type": "application/json", ...corsHeaders } 
         });
       }
-
-      if (path === "/members" && request.method === "POST") {
+    if (path.startsWith("/members/") && request.method === "PUT") {
+        const id = path.split("/")[2];
         const body = await request.json();
-        const id = generateId(); // <-- Changed from crypto.randomUUID()
-        
-        await env.DB.prepare(
-          `INSERT INTO members (id, name, phone, address, package_id, package_price, total_amount, paid_amount, package_start_date, photo, active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-        ).bind(
-          id,
-          body.name, body.phone || "", body.address || "",
-          body.packageId || null, body.packagePrice || 0, body.totalAmount,
-          body.paidAmount || 0, body.packageStartDate || null, body.photo || "",
-          1, new Date().toISOString(), new Date().toISOString()
-        ).run();
-        
-        return new Response(JSON.stringify({ success: true }), { 
-          status: 201, 
-          headers: { "Content-Type": "application/json", ...corsHeaders } 
-        });
-      }
 
+    await env.DB.prepare(
+    `UPDATE members SET
+      name=?,
+      phone=?,
+      address=?,
+      package_id=?,
+      package_price=?,
+      total_amount=?,
+      paid_amount=?,
+      package_start_date=?,
+      photo=?,
+      updated_at=?
+     WHERE id=?`
+    ).bind(
+    body.name,
+    body.phone,
+    body.address,
+    body.packageId,
+    body.packagePrice,
+    body.totalAmount,
+    body.paidAmount,
+    body.packageStartDate,
+    body.photo || "",
+    new Date().toISOString(),
+    id
+    ).run();
+
+    return new Response(
+    JSON.stringify({ success: true }),
+    {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders
+      }
+    }
+    );
+}
       if (path.startsWith("/members/") && request.method === "PUT") {
         const id = path.split("/")[2];
         const body = await request.json();
