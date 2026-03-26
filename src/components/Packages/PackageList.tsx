@@ -190,32 +190,40 @@ export const PackageList: React.FC = () => {
             placeholder="e.g., Monthly, Quarterly"
           />
           <TextField
-            fullWidth
-            label="Duration (Days)"
-            type="number"
-            value={formData.durationDays}
-            onChange={(e) =>
-              setFormData({ ...formData, durationDays: Number(e.target.value) })
-            }
-            error={Boolean(errors.durationDays)}
-            helperText={errors.durationDays}
-            margin="normal"
-          />
+  fullWidth
+  label="Duration (Days)"
+  type="number"
+  value={formData.durationDays || ""}
+  onChange={(e) =>
+    setFormData({
+      ...formData,
+      durationDays: parseInt(e.target.value || "0", 10),
+    })
+  }
+  error={Boolean(errors.durationDays)}
+  helperText={errors.durationDays}
+  margin="normal"
+/>
           <TextField
-            fullWidth
-            label="Base Price"
-            type="number"
-            value={formData.basePrice}
-            onChange={(e) =>
-              setFormData({ ...formData, basePrice: Number(e.target.value) })
-            }
-            error={Boolean(errors.basePrice)}
-            helperText={errors.basePrice}
-            margin="normal"
-            InputProps={{
-              startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-            }}
-          />
+  fullWidth
+  label="Base Price"
+  type="number"
+  value={formData.basePrice || ""}
+  onChange={(e) =>
+    setFormData({
+      ...formData,
+      basePrice: parseInt(e.target.value || "0", 10),
+    })
+  }
+  error={Boolean(errors.basePrice)}
+  helperText={errors.basePrice}
+  margin="normal"
+  InputProps={{
+    startAdornment: (
+      <InputAdornment position="start">₹</InputAdornment>
+    ),
+  }}
+/>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog}>Cancel</Button>

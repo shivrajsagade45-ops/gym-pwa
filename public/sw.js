@@ -1,91 +1,100 @@
-const CACHE_NAME = 'gympro-cache-v1';
+const CACHE_NAME = "gympro-cache-v2";
+
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon.svg',
-  '/icon-192.png',
-  '/icon-512.png'
+  "/",
+  "/icon-192.png",
+  "/icon-512.png"
 ];
 
-// Install event - cache static assets
-self.addEventListener('install', (event) => {
+
+// ---------------- INSTALL ----------------
+
+self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('Caching static assets');
+      console.log("Caching static assets");
       return cache.addAll(STATIC_ASSETS);
     })
   );
+
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
-self.addEventListener('activate', (event) => {
+
+// ---------------- ACTIVATE ----------------
+
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
+    caches.keys().then((names) =>
+      Promise.all(
+        names
           .filter((name) => name !== CACHE_NAME)
           .map((name) => caches.delete(name))
-      );
-    })
+      )
+    )
   );
+
   self.clients.claim();
 });
 
-// Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') {
-    return;
-  }
 
-  // Skip cross-origin requests
-  if (!event.request.url.startsWith(self.location.origin)) {
+// ---------------- FETCH ----------------
+
+self.addEventListener("fetch", (event) => {
+
+  // only GET
+  if (event.request.method !== "GET") return;
+
+  // skip cross origin (API / workers)
+  if (!event.request.url.startsWith(self.location.origin)) return;
+
+  // ❌ do not cache html / json / api
+  if (
+    event.request.url.endsWith(".html") ||
+    event.request.url.endsWith(".json") ||
+    event.request.url.includes("/members") ||
+    event.request.url.includes("/packages") ||
+    event.request.url.includes("/payments")
+  ) {
     return;
   }
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Return cached response and update cache in background
-        event.waitUntil(
-          fetch(event.request).then((networkResponse) => {
-            if (networkResponse && networkResponse.status === 200) {
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, networkResponse.clone());
-              });
-            }
-          }).catch(() => {
-            // Network failed, but we have cache
-          })
-        );
-        return cachedResponse;
+    caches.match(event.request).then((cached) => {
+
+      if (cached) {
+        return cached;
       }
 
-      // No cache, fetch from network
-      return fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
+      return fetch(event.request)
+        .then((response) => {
+
+          if (!response || response.status !== 200) {
+            return response;
+          }
+
+          const clone = response.clone();
+
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
+            cache.put(event.request, clone);
           });
-        }
-        return networkResponse;
-      }).catch(() => {
-        // Network failed and no cache - return offline page for navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
-        }
-        return new Response('Offline', { status: 503 });
-      });
+
+          return response;
+        })
+        .catch(() => {
+          return caches.match("/");
+        });
+
     })
   );
+
 });
 
-// Handle messages from the main app
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+
+// ---------------- MESSAGE ----------------
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 });

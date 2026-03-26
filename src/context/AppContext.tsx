@@ -1,6 +1,33 @@
 // @ts-nocheck
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { Member, Payment, Package } from "../types";
+export interface AppContextType {
+  members: Member[];
+  packages: Package[];
+  payments: Payment[];
+  staff: any[];
+  isLoading: boolean;
 
+  addMember: (data: any) => Promise<void>;
+  updateMember: (id: string, data: any) => Promise<void>;
+  deleteMember: (id: string) => Promise<void>;
+  getMemberById: (id: string) => Member | undefined;
+  getMembersWithPending: () => Member[];
+
+  addPackage: (data: any) => Promise<void>;
+  updatePackage: (id: string, data: any) => Promise<void>;
+  deletePackage: (id: string) => Promise<void>;
+  getPackageById: (id: string) => Package | undefined;
+
+  addPayment: (data: any) => Promise<void>;
+  getPaymentsByMember: (id: string) => Payment[];
+
+  addStaff: (data: any) => Promise<void>;
+  updateStaff: (id: string, data: any) => Promise<void>;
+  deleteStaff: (id: string) => Promise<void>;
+
+  getDashboardStats: () => any;
+}
 const API_URL = "https://gym-api.fitnessfreaks.workers.dev";
 const AppContext = createContext(undefined);
 
@@ -169,28 +196,28 @@ useEffect(() => {
   };
 
   // --- PACKAGES ---
-  const addPackage = async (data) => {
-    try {
-      await fetch(`${API_URL}/packages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      await loadData();
-    } catch (e) { alert("Error adding package"); }
-  };
+  const addPackage = async (data: any) => {
+  console.log("ADD PACKAGE DATA:", data);
 
-  const updatePackage = async (id, data) => {
-    try {
-      await fetch(`${API_URL}/packages/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-      });
-      await loadData();
-    } catch (e) { alert("Error updating package"); }
-  };
+  try {
+    await fetch(`${API_URL}/packages`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: data.name,
+        durationDays: Number(data.durationDays),
+        basePrice: Number(data.basePrice),
+      }),
+    });
 
+    await loadData();
+  } catch (e) {
+    console.error("Add package error", e);
+    alert("Error adding package");
+  }
+};
   const deletePackage = async (id) => {
     if(!window.confirm("Delete this package?")) return;
     try {
@@ -269,8 +296,8 @@ useEffect(() => {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
-export const useApp = () => {
+export const useApp = (): AppContextType => {
   const ctx = useContext(AppContext);
   if (!ctx) throw new Error("useApp must be used within AppProvider");
-  return ctx;
+  return ctx as AppContextType;
 };
