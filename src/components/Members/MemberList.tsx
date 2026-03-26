@@ -1,7 +1,7 @@
 import { sendWhatsAppMessage } from "../../utils/whatsapp";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Card,
@@ -25,7 +25,7 @@ import {
   DialogActions,
   Tabs,
   Tab,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add as AddIcon,
   Search as SearchIcon,
@@ -37,47 +37,65 @@ import {
   CheckCircle as ActiveIcon,
   Cancel as ExpiredIcon,
   HelpOutline as NoPackageIcon,
-} from '@mui/icons-material';
-import { useApp } from '../../context/AppContext';
-import { MemberWithPending, MembershipStatus } from '../../types';
+} from "@mui/icons-material";
+import { useApp } from "../../context/AppContext";
+import { MemberWithPending, MembershipStatus } from "../../types";
 
-type TabValue = 'all' | 'active' | 'expired';
+type TabValue = "all" | "active" | "expired";
 
 export const MemberList: React.FC = () => {
   const navigate = useNavigate();
-  const { getMembersWithPending, deleteMember } = useApp();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedMember, setSelectedMember] = useState<MemberWithPending | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabValue>('all');
 
-  const members = getMembersWithPending();
-  
+  // Cast to proper types to fix "never" errors
+  const { getMembersWithPending, deleteMember } = useApp() as unknown as {
+    getMembersWithPending: () => MemberWithPending[];
+    deleteMember: (id: string) => void;
+  };
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedMember, setSelectedMember] =
+    useState<MemberWithPending | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabValue>("all");
+
+  const members: MemberWithPending[] = getMembersWithPending();
+
   // Filter by tab
-  const getFilteredByTab = () => {
+  const getFilteredByTab = (): MemberWithPending[] => {
     switch (activeTab) {
-      case 'active':
-        return members.filter(m => m.membershipStatus === 'active');
-      case 'expired':
-        return members.filter(m => m.membershipStatus === 'expired');
+      case "active":
+        return members.filter(
+          (m: MemberWithPending) => m.membershipStatus === "active"
+        );
+      case "expired":
+        return members.filter(
+          (m: MemberWithPending) => m.membershipStatus === "expired"
+        );
       default:
         return members;
     }
   };
 
   // Then filter by search
-  const filteredMembers = getFilteredByTab().filter(
-    (member) =>
+  const filteredMembers: MemberWithPending[] = getFilteredByTab().filter(
+    (member: MemberWithPending) =>
       member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       member.phone.includes(searchQuery)
   );
 
   // Count members by status
-  const activeCount = members.filter(m => m.membershipStatus === 'active').length;
-  const expiredCount = members.filter(m => m.membershipStatus === 'expired').length;
+  const activeCount = members.filter(
+    (m: MemberWithPending) => m.membershipStatus === "active"
+  ).length;
+  const expiredCount = members.filter(
+    (m: MemberWithPending) => m.membershipStatus === "expired"
+  ).length;
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, member: MemberWithPending) => {
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLElement>,
+    member: MemberWithPending
+  ) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
     setSelectedMember(member);
@@ -115,38 +133,38 @@ export const MemberList: React.FC = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
       maximumFractionDigits: 0,
     }).format(amount);
   };
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
+      .split(" ")
       .map((n) => n[0])
-      .join('')
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
 
   const getStatusColor = (status: MembershipStatus) => {
     switch (status) {
-      case 'active':
-        return 'success';
-      case 'expired':
-        return 'error';
+      case "active":
+        return "success";
+      case "expired":
+        return "error";
       default:
-        return 'default';
+        return "default";
     }
   };
 
   const getStatusIcon = (status: MembershipStatus) => {
     switch (status) {
-      case 'active':
+      case "active":
         return <ActiveIcon sx={{ fontSize: 14 }} />;
-      case 'expired':
+      case "expired":
         return <ExpiredIcon sx={{ fontSize: 14 }} />;
       default:
         return <NoPackageIcon sx={{ fontSize: 14 }} />;
@@ -154,33 +172,42 @@ export const MemberList: React.FC = () => {
   };
 
   const getAvatarColor = (status: MembershipStatus, hasPending: boolean) => {
-    if (status === 'expired') return 'error.main';
-    if (hasPending) return 'warning.main';
-    if (status === 'active') return 'success.main';
-    return 'grey.500';
+    if (status === "expired") return "error.main";
+    if (hasPending) return "warning.main";
+    if (status === "active") return "success.main";
+    return "grey.500";
   };
 
   const getAvatarBorderColor = (status: MembershipStatus) => {
     switch (status) {
-      case 'active':
-        return 'success.main';
-      case 'expired':
-        return 'error.main';
+      case "active":
+        return "success.main";
+      case "expired":
+        return "error.main";
       default:
-        return 'grey.400';
+        return "grey.400";
     }
   };
 
   return (
     <Box>
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
         <Typography variant="h5" fontWeight={700}>
           Members ({members.length})
         </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => navigate('/members/add')}
+          onClick={() => navigate("/members/add")}
           sx={{ borderRadius: 2 }}
         >
           Add Member
@@ -191,43 +218,45 @@ export const MemberList: React.FC = () => {
       <Card sx={{ mb: 2 }}>
         <Tabs
           value={activeTab}
-          onChange={(_, newValue) => setActiveTab(newValue)}
+          onChange={(_: React.SyntheticEvent, newValue: TabValue) =>
+            setActiveTab(newValue)
+          }
           variant="fullWidth"
           sx={{
-            '& .MuiTab-root': {
-              textTransform: 'none',
+            "& .MuiTab-root": {
+              textTransform: "none",
               fontWeight: 600,
             },
           }}
         >
-          <Tab 
+          <Tab
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 All
                 <Chip label={members.length} size="small" />
               </Box>
-            } 
-            value="all" 
+            }
+            value="all"
           />
-          <Tab 
+          <Tab
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ActiveIcon sx={{ fontSize: 18, color: 'success.main' }} />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <ActiveIcon sx={{ fontSize: 18, color: "success.main" }} />
                 Active
                 <Chip label={activeCount} size="small" color="success" />
               </Box>
-            } 
-            value="active" 
+            }
+            value="active"
           />
-          <Tab 
+          <Tab
             label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <ExpiredIcon sx={{ fontSize: 18, color: 'error.main' }} />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <ExpiredIcon sx={{ fontSize: 18, color: "error.main" }} />
                 Expired
                 <Chip label={expiredCount} size="small" color="error" />
               </Box>
-            } 
-            value="expired" 
+            }
+            value="expired"
           />
         </Tabs>
       </Card>
@@ -254,115 +283,163 @@ export const MemberList: React.FC = () => {
       <Card>
         {filteredMembers.length === 0 ? (
           <CardContent>
-            <Box sx={{ py: 4, textAlign: 'center' }}>
+            <Box sx={{ py: 4, textAlign: "center" }}>
               <Typography color="text.secondary">
-                {searchQuery 
-                  ? 'No members found matching your search.' 
-                  : activeTab === 'active'
-                    ? 'No active members found.'
-                    : activeTab === 'expired'
-                      ? 'No expired memberships. Great!'
-                      : 'No members yet. Add your first member!'}
+                {searchQuery
+                  ? "No members found matching your search."
+                  : activeTab === "active"
+                  ? "No active members found."
+                  : activeTab === "expired"
+                  ? "No expired memberships. Great!"
+                  : "No members yet. Add your first member!"}
               </Typography>
             </Box>
           </CardContent>
         ) : (
           <List disablePadding>
-            {filteredMembers.map((member, index) => (
-              <ListItem
-                key={member.id}
-                divider={index < filteredMembers.length - 1}
-                sx={{
-                  cursor: 'pointer',
-                  '&:hover': { bgcolor: 'action.hover' },
-                  py: 2,
-                }}
-                onClick={() => navigate(`/members/${member.id}`)}
-              >
-                <Avatar
-                  src={member.photo || undefined}
+            {filteredMembers.map(
+              (member: MemberWithPending, index: number) => (
+                <ListItem
+                  key={member.id}
+                  divider={index < filteredMembers.length - 1}
                   sx={{
-                    bgcolor: getAvatarColor(member.membershipStatus, member.pendingAmount > 0),
-                    mr: 2,
-                    border: '2px solid',
-                    borderColor: getAvatarBorderColor(member.membershipStatus),
+                    cursor: "pointer",
+                    "&:hover": { bgcolor: "action.hover" },
+                    py: 2,
                   }}
+                  onClick={() => navigate(`/members/${member.id}`)}
                 >
-                  {getInitials(member.name)}
-                </Avatar>
-                <ListItemText
-                  primary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                      <Typography fontWeight={600}>{member.name}</Typography>
-                      <Chip
-                        icon={getStatusIcon(member.membershipStatus)}
-                        label={
-                          member.membershipStatus === 'active' 
-                            ? `${member.daysRemaining} days left`
-                            : member.membershipStatus === 'expired'
-                              ? 'Expired'
-                              : 'No Package'
-                        }
-                        color={getStatusColor(member.membershipStatus)}
-                        size="small"
-                        variant={member.membershipStatus === 'no-package' ? 'outlined' : 'filled'}
-                      />
-                      {member.pendingAmount > 0 && (
+                  <Avatar
+                    src={member.photo || undefined}
+                    sx={{
+                      bgcolor: getAvatarColor(
+                        member.membershipStatus,
+                        member.pendingAmount > 0
+                      ),
+                      mr: 2,
+                      border: "2px solid",
+                      borderColor: getAvatarBorderColor(
+                        member.membershipStatus
+                      ),
+                    }}
+                  >
+                    {getInitials(member.name)}
+                  </Avatar>
+                  <ListItemText
+                    primary={
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <Typography fontWeight={600}>
+                          {member.name}
+                        </Typography>
                         <Chip
-                          label={`Due: ${formatCurrency(member.pendingAmount)}`}
-                          color="warning"
+                          icon={getStatusIcon(member.membershipStatus)}
+                          label={
+                            member.membershipStatus === "active"
+                              ? `${member.daysRemaining} days left`
+                              : member.membershipStatus === "expired"
+                              ? "Expired"
+                              : "No Package"
+                          }
+                          color={getStatusColor(member.membershipStatus)}
                           size="small"
-                          variant="outlined"
+                          variant={
+                            member.membershipStatus === "no-package"
+                              ? "outlined"
+                              : "filled"
+                          }
                         />
-                      )}
-                    </Box>
-                  }
-                  secondary={
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 0.5, flexWrap: 'wrap' }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                        <PhoneIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                        <Typography variant="body2" color="text.secondary">
-                          {member.phone}
-                        </Typography>
+                        {member.pendingAmount > 0 && (
+                          <Chip
+                            label={`Due: ${formatCurrency(
+                              member.pendingAmount
+                            )}`}
+                            color="warning"
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
                       </Box>
-                      {member.packageName && (
-                        <Chip label={member.packageName} size="small" variant="outlined" />
-                      )}
-                      {member.packageExpiryDate && (
-                        <Typography variant="caption" color="text.secondary">
-                          Expires: {new Date(member.packageExpiryDate).toLocaleDateString('en-IN')}
-                        </Typography>
-                      )}
-                    </Box>
-                  }
-                />
-                <ListItemSecondaryAction>
-  {/* WhatsApp Button */}
-  <IconButton
-    edge="end"
-    color="success"
-    onClick={(e) => {
-      e.stopPropagation(); // Prevent list item click
-      sendWhatsAppMessage(
-        member.phone,
-        `Hi ${member.name}, this is a reminder from the gym regarding your membership. Please contact us for renewal 💪`
-      );
-    }}
-    sx={{ mr: 1 }}
-  >
-    <WhatsAppIcon />
-  </IconButton>
+                    }
+                    secondary={
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                          mt: 0.5,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                          }}
+                        >
+                          <PhoneIcon
+                            sx={{ fontSize: 14, color: "text.secondary" }}
+                          />
+                          <Typography variant="body2" color="text.secondary">
+                            {member.phone}
+                          </Typography>
+                        </Box>
+                        {member.packageName && (
+                          <Chip
+                            label={member.packageName}
+                            size="small"
+                            variant="outlined"
+                          />
+                        )}
+                        {member.packageExpiryDate && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                          >
+                            Expires:{" "}
+                            {new Date(
+                              member.packageExpiryDate
+                            ).toLocaleDateString("en-IN")}
+                          </Typography>
+                        )}
+                      </Box>
+                    }
+                  />
+                  <ListItemSecondaryAction>
+                    {/* WhatsApp Button */}
+                    <IconButton
+                      edge="end"
+                      color="success"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sendWhatsAppMessage(
+                          member.phone,
+                          `Hi ${member.name}, this is a reminder from the gym regarding your membership. Please contact us for renewal 💪`
+                        );
+                      }}
+                      sx={{ mr: 1 }}
+                    >
+                      <WhatsAppIcon />
+                    </IconButton>
 
-  {/* More Menu Button */}
-  <IconButton
-    edge="end"
-    onClick={(e) => handleMenuOpen(e, member)}
-  >
-    <MoreVertIcon />
-  </IconButton>
-</ListItemSecondaryAction>
-              </ListItem>
-            ))}
+                    {/* More Menu Button */}
+                    <IconButton
+                      edge="end"
+                      onClick={(e) => handleMenuOpen(e, member)}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              )
+            )}
           </List>
         )}
       </Card>
@@ -380,22 +457,30 @@ export const MemberList: React.FC = () => {
           <EditIcon sx={{ mr: 1 }} fontSize="small" />
           Edit
         </MenuItem>
-        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+        <MenuItem onClick={handleDeleteClick} sx={{ color: "error.main" }}>
           <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
           Delete
         </MenuItem>
       </Menu>
 
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
         <DialogTitle>Delete Member</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete {selectedMember?.name}? This will also delete all their payment history.
+            Are you sure you want to delete {selectedMember?.name}? This will
+            also delete all their payment history.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+          <Button
+            onClick={handleDeleteConfirm}
+            color="error"
+            variant="contained"
+          >
             Delete
           </Button>
         </DialogActions>
