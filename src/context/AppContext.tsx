@@ -29,7 +29,7 @@ export interface AppContextType {
   getDashboardStats: () => any;
 }
 const API_URL = "https://gym-api.fitnessfreaks.workers.dev";
-const AppContext = createContext(undefined);
+const AppContext = createContext<AppContextType>({} as AppContextType);
 
 // Helper: Calculate Membership Status
 const calculateStatus = (start, duration) => {
@@ -298,6 +298,7 @@ useEffect(() => {
 
 export const useApp = (): AppContextType => {
   const ctx = useContext(AppContext);
-  if (!ctx) throw new Error("useApp must be used within AppProvider");
+  if (!ctx) {
+  console.error("AppContext is undefined");
   return ctx as AppContextType;
-};
+}}

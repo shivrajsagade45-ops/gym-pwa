@@ -1,3 +1,5 @@
+
+import { ErrorBoundary } from "./ErrorBoundary";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
@@ -90,25 +92,27 @@ export function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <AppProvider>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="dashboard" element={<Navigate to="/" replace />} />
-              <Route path="members" element={<MemberList />} />
-              <Route path="members/add" element={<MemberForm />} />
-              <Route path="members/:id" element={<MemberDetail />} />
-              <Route path="members/:id/edit" element={<MemberForm />} />
-              <Route path="packages" element={<PackageList />} />
-              <Route path="payments" element={<PaymentList />} />
-              <Route path="payments/add" element={<PaymentForm />} />
-              <Route path="pending-payments" element={<PendingPayments />} />
-              <Route path="staff" element={<StaffList />} />
-            </Route>
-            {/* Catch all - redirect to home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </AppProvider>
+        <ErrorBoundary>
+  <AppProvider>
+    <Routes>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Dashboard />} />
+        <Route path="dashboard" element={<Navigate to="/" replace />} />
+        <Route path="members" element={<MemberList />} />
+        <Route path="members/add" element={<MemberForm />} />
+        <Route path="members/:id" element={<MemberDetail />} />
+        <Route path="members/:id/edit" element={<MemberForm />} />
+        <Route path="packages" element={<PackageList />} />
+        <Route path="payments" element={<PaymentList />} />
+        <Route path="payments/add" element={<PaymentForm />} />
+        <Route path="pending-payments" element={<PendingPayments />} />
+        <Route path="staff" element={<StaffList />} />
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  </AppProvider>
+</ErrorBoundary>
       </BrowserRouter>
     </ThemeProvider>
   );

@@ -7,7 +7,7 @@ import { App } from "./App";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <div style={{ color: "red" }}>WORKING</div>
+    <App />
   </StrictMode>
 );
 
