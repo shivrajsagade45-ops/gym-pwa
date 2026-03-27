@@ -283,7 +283,26 @@ useEffect(() => {
       totalCollected: totalCollected
     };
   };
+const updatePackage = async (id: string, data: any) => {
+  try {
+    await fetch(`${API_URL}/packages/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: data.name,
+        durationDays: Number(data.durationDays),
+        basePrice: Number(data.basePrice),
+      }),
+    });
 
+    await loadData();
+  } catch (e) {
+    console.error("Update package error", e);
+    alert("Error updating package");
+  }
+};
   const value = {
     members, packages, payments, staff, isLoading,
     addMember, updateMember, deleteMember, getMemberById, getMembersWithPending,
@@ -298,7 +317,11 @@ useEffect(() => {
 
 export const useApp = (): AppContextType => {
   const ctx = useContext(AppContext);
+
   if (!ctx) {
-  console.error("AppContext is undefined");
-  return ctx as AppContextType;
-}}
+    console.error("AppContext is undefined");
+    return {} as AppContextType; // ✅ safe fallback
+  }
+
+  return ctx; // ✅ THIS WAS MISSING
+};
