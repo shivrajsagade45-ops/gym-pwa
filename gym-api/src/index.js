@@ -101,6 +101,17 @@ if (url.pathname.startsWith("/members/") && method === "PUT") {
 
   return json({ ok: true });
 }
+if (url.pathname.startsWith("/members/") && method === "DELETE") {
+  const id = url.pathname.split("/")[2];
+
+  await env.DB.prepare(
+    "DELETE FROM members WHERE id=?"
+  )
+    .bind(id)
+    .run();
+
+  return json({ ok: true });
+}
     // ---------- PACKAGES ----------
 
     if (url.pathname === "/packages" && method === "GET") {
