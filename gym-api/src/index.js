@@ -41,13 +41,14 @@ export default {
 
   await env.DB.prepare(
     `INSERT INTO members
-    (id, name, phone, address,
-     package_id, package_price,
-     total_amount, paid_amount,
-     package_start_date,
-     photo,
-     active, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))`
+(id, name, phone, address,
+ package_id, package_price,
+ total_amount, paid_amount,
+ package_start_date,
+ package_end_date,   
+ photo,
+ active, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))`
   )
     .bind(
       id,
@@ -59,13 +60,14 @@ export default {
       body.totalAmount,
       body.paidAmount,
       body.packageStartDate,
+      body.packageEndDate,
       body.photo || null
     )
     .run();
 
   return json({ ok: true });
 }
-if (url.pathname.startsWith("/members/") && method === "PUT") {
+if (url.pathname.startsWith("/members") && method === "PUT") {
 
   const id = url.pathname.split("/")[2];
 
@@ -73,35 +75,37 @@ if (url.pathname.startsWith("/members/") && method === "PUT") {
 
   await env.DB.prepare(
     `UPDATE members
-     SET name = ?,
-         phone = ?,
-         address = ?,
-         package_id = ?,
-         package_price = ?,
-         total_amount = ?,
-         paid_amount = ?,
-         package_start_date = ?,
-         photo = ?,
-         updated_at = datetime('now')
-     WHERE id = ?`
+SET name = ?,
+    phone = ?,
+    address = ?,
+    package_id = ?,
+    package_price = ?,
+    total_amount = ?,
+    paid_amount = ?,
+    package_start_date = ?,
+    package_end_date = ?,   -- ✅ ADD THIS
+    photo = ?,
+    updated_at = datetime('now')
+WHERE id = ?`
   )
     .bind(
-      body.name,
-      body.phone,
-      body.address,
-      body.packageId,
-      body.packagePrice,
-      body.totalAmount,
-      body.paidAmount,
-      body.packageStartDate,
-      body.photo || null,
-      id
-    )
+  body.name,
+  body.phone,
+  body.address,
+  body.packageId,
+  body.packagePrice,
+  body.totalAmount,
+  body.paidAmount,
+  body.packageStartDate,
+  body.packageEndDate,   
+  body.photo || null,
+  id
+)
     .run();
 
   return json({ ok: true });
 }
-if (url.pathname.startsWith("/members/") && method === "DELETE") {
+if (url.pathname.startsWith("/members") && method === "DELETE") {
   const id = url.pathname.split("/")[2];
 
   await env.DB.prepare(
@@ -143,7 +147,7 @@ if (url.pathname.startsWith("/members/") && method === "DELETE") {
       return json({ ok: true });
     }
 
-    if (url.pathname.startsWith("/packages/") && method === "DELETE") {
+    if (url.pathname.startsWith("/packages") && method === "DELETE") {
       const id = url.pathname.split("/")[2];
 
       await env.DB.prepare(
@@ -154,7 +158,7 @@ if (url.pathname.startsWith("/members/") && method === "DELETE") {
 
       return json({ ok: true });
     }
-    if (url.pathname.startsWith("/packages/") && method === "PUT") {
+    if (url.pathname.startsWith("/packages") && method === "PUT") {
   const id = url.pathname.split("/")[2];
 
   const body = await request.json();

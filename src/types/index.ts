@@ -17,6 +17,7 @@ export interface Member {
   photo?: string; // Base64 encoded photo or URL
   packageId: string | null;
   packageStartDate: string | null; // When the package was assigned
+  packageEndDate?: string | null;
   packagePrice: number; // Can be overridden per member
   totalAmount: number;
   paidAmount: number;

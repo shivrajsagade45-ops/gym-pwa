@@ -32,6 +32,7 @@ export const MemberForm: React.FC = () => {
   const isEdit = Boolean(id);
   const { packages, addMember, updateMember, getMemberById } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isManualEndDate, setIsManualEndDate] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -40,6 +41,7 @@ export const MemberForm: React.FC = () => {
     photo: '',
     packageId: '',
     packageStartDate: new Date().toISOString().split('T')[0],
+    packageEndDate: '',
     packagePrice: 0,
     totalAmount: 0,
     paidAmount: 0,
@@ -58,6 +60,7 @@ export const MemberForm: React.FC = () => {
           photo: member.photo || '',
           packageId: member.packageId || '',
           packageStartDate: member.packageStartDate || new Date().toISOString().split('T')[0],
+           packageEndDate: member.packageEndDate || '',
           packagePrice: member.packagePrice,
           totalAmount: member.totalAmount,
           paidAmount: member.paidAmount,
@@ -68,6 +71,28 @@ export const MemberForm: React.FC = () => {
       }
     }
   }, [id, isEdit, getMemberById]);
+
+  const calculateEndDate = (startDate: string, durationDays: number): string => {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + durationDays);
+    return d.toISOString().split("T")[0];
+  };
+
+  useEffect(() => {
+  if (
+    formData.packageId &&
+    formData.packageStartDate &&
+    !isManualEndDate   // ✅ THIS IS THE FIX
+  ) {
+    const pkg = packages.find((p) => p.id === formData.packageId);
+    if (pkg) {
+      setFormData((prev) => ({
+        ...prev,
+        packageEndDate: calculateEndDate(prev.packageStartDate, pkg.durationDays)
+      }));
+    }
+  }
+}, [formData.packageId, formData.packageStartDate, packages, isManualEndDate]);
 
   const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -147,6 +172,7 @@ export const MemberForm: React.FC = () => {
 
   const handlePackageChange = (packageId: string) => {
     const selectedPackage = packages.find((p) => p.id === packageId);
+    setIsManualEndDate(false);
     if (selectedPackage) {
       setFormData((prev) => ({
         ...prev,
@@ -190,9 +216,9 @@ export const MemberForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
+  const handleSubmit = async () => {
+    console.log("🔥 SUBMIT CLICKED");
+    //if (!validate()) return;
 
     const memberData = {
       name: formData.name,
@@ -201,10 +227,12 @@ export const MemberForm: React.FC = () => {
       photo: formData.photo || undefined,
       packageId: formData.packageId,
       packageStartDate: formData.packageStartDate,
+      packageEndDate: formData.packageEndDate,
       packagePrice: formData.packagePrice,
       totalAmount: formData.totalAmount,
       paidAmount: formData.paidAmount,
     };
+    console.log("📦 DATA:", memberData);
 
     try {
       if (isEdit && id) {
@@ -375,6 +403,21 @@ export const MemberForm: React.FC = () => {
 
             <TextField
               fullWidth
+              label="Package End Date"
+              type="date"
+              value={formData.packageEndDate}
+              onChange={(e) => {
+  setIsManualEndDate(true); // ✅ mark manual override
+  setFormData({ ...formData, packageEndDate: e.target.value });
+}}
+              error={Boolean(errors.packageEndDate)}
+              helperText={errors.packageEndDate || 'Automatically calculated'}
+              margin="normal"
+              InputLabelProps={{ shrink: true }}
+            />
+
+            <TextField
+              fullWidth
               label="Package Price (can override)"
               type="number"
               value={formData.packagePrice}
@@ -435,9 +478,12 @@ export const MemberForm: React.FC = () => {
 
             <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
               <Button
-                type="submit"
-                variant="contained"
-                startIcon={<SaveIcon />}
+  onClick={() => {
+    console.log("BUTTON CLICKED");   // 🔥 debug
+    handleSubmit();
+  }}
+  variant="contained"
+  startIcon={<SaveIcon  />}
                 sx={{ borderRadius: 2 }}
               >
                 {isEdit ? 'Update Member' : 'Add Member'}

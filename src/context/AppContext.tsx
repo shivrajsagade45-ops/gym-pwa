@@ -12,8 +12,7 @@ export interface AppContextType {
   updateMember: (id: string, data: any) => Promise<void>;
   deleteMember: (id: string) => Promise<void>;
   getMemberById: (id: string) => Member | undefined;
-  getMembersWithPending: () => Member[];
-
+  getMembersWithPending: () => MemberWithPending[];
   addPackage: (data: any) => Promise<void>;
   updatePackage: (id: string, data: any) => Promise<void>;
   deletePackage: (id: string) => Promise<void>;
@@ -92,6 +91,8 @@ const loadData = useCallback(async () => {
         packageStartDate:
           m.package_start_date ??
           m.packageStartDate,
+
+        packageEndDate: m.package_end_date ?? m.packageEndDate,
       }))
     );
 
@@ -154,47 +155,53 @@ useEffect(() => {
 
   // ✅ FIXED: Robust handling of snake_case vs camelCase to prevent NaN
   const getMembersWithPending = () => {
-    return members.map(m => {
-      // 1. Find Package (Check both ID formats)
-      const pkg = packages.find(p => p.id === (m.package_id || m.packageId));
-      
-      // 2. Get Duration (Check both formats)
-      const dur = pkg ? (pkg.duration_days || pkg.durationDays) : null;
-      
-      // 3. Get Start Date (Check both formats)
-      const start = m.package_start_date || m.packageStartDate;
-      
-      const status = calculateStatus(start, dur);
-      
-      // 4. SAFE MATH: Explicitly extract values, default to 0 if missing
-      // We check snake_case first (from DB), then camelCase (from JS objects)
-      let totalVal = m.total_amount;
-      if (totalVal === undefined || totalVal === null) totalVal = m.totalAmount;
-      if (totalVal === undefined || totalVal === null) totalVal = 0;
-      
-      let paidVal = m.paid_amount;
-      if (paidVal === undefined || paidVal === null) paidVal = m.paidAmount;
-      if (paidVal === undefined || paidVal === null) paidVal = 0;
+  return members.map((m: any) => {
+    const pkg = packages.find((p: any) => p.id === (m.package_id || m.packageId));
+    const dur = pkg ? (pkg.duration_days || pkg.durationDays) : null;
+    const start = m.package_start_date || m.packageStartDate;
 
-      // Force conversion to Number to handle string inputs like "1000"
-      const totalNum = Number(totalVal);
-      const paidNum = Number(paidVal);
+    // ✅ override logic
+    let expiryDate: Date | null = null;
+    const manualEnd = m.package_end_date || m.packageEndDate;
 
-      // Calculate pending. If result is NaN, force to 0.
-      let pending = totalNum - paidNum;
-      if (isNaN(pending)) pending = 0;
+    if (manualEnd) {
+      expiryDate = new Date(manualEnd);
+    } else if (start && dur) {
+      expiryDate = new Date(start);
+      expiryDate.setDate(expiryDate.getDate() + dur);
+    }
 
-      return {
-        ...m,
-        pendingAmount: pending, // Guaranteed to be a valid number
-        packageName: pkg ? (pkg.name || "Unknown") : "No Package",
-        membershipStatus: status.status,
-        daysRemaining: status.daysRemaining,
-        packageExpiryDate: status.expiryDate
-      };
-    });
-  };
+    const today = new Date();
 
+    let membershipStatus: any = "no-package";
+    let daysRemaining: number | null = null;
+
+    if (expiryDate) {
+      membershipStatus = expiryDate < today ? "expired" : "active";
+      daysRemaining = Math.ceil(
+        (expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      );
+    }
+
+    let totalVal = m.total_amount ?? m.totalAmount ?? 0;
+    let paidVal = m.paid_amount ?? m.paidAmount ?? 0;
+
+    const totalNum = Number(totalVal);
+    const paidNum = Number(paidVal);
+
+    let pending = totalNum - paidNum;
+    if (isNaN(pending)) pending = 0;
+
+    return {
+      ...m,
+      pendingAmount: pending,
+      packageName: pkg ? (pkg.name || "Unknown") : "No Package",
+      membershipStatus,
+      daysRemaining,
+      packageExpiryDate: expiryDate ? expiryDate.toISOString() : null
+    };
+  });
+};
   // --- PACKAGES ---
   const addPackage = async (data: any) => {
   console.log("ADD PACKAGE DATA:", data);

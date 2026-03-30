@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS members (
   total_amount REAL,
   paid_amount REAL,
   package_start_date TEXT,
+  package_end_date TEXT,
   photo TEXT,
   active INTEGER,
   created_at TEXT,
